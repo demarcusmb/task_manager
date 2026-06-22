@@ -68,7 +68,6 @@ exports.getTaskById = (req, res, next) => {
     }
 };
 
-
 // ======================
 // UPDATE TASK
 // ======================
