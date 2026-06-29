@@ -1,3 +1,6 @@
+const express = require("express");
+const router = express.Router();
+
 // Import the tasks array from the data folder.
 // This acts as our temporary in-memory database.
 const tasks = require("../data/tasks");
@@ -6,7 +9,7 @@ const tasks = require("../data/tasks");
 // ======================
 // CREATE A NEW TASK
 // ======================
-exports.createTask = (req, res, next) => {
+router.post("/",  (req,res) => {
     try {
         // Extract the title from the request body
         // Example: { "title": "Learn Express" }
@@ -15,7 +18,7 @@ exports.createTask = (req, res, next) => {
         // Validate that a title was provided
         if (!title) {
             return res.status(400).json({
-                message: "Title is required",
+                message: "Title is required"
             });
         }
 
@@ -25,7 +28,7 @@ exports.createTask = (req, res, next) => {
             id: Date.now().toString(),
 
             // Store the provided title
-            title,
+            title
         };
 
         // Add the new task to the tasks array
@@ -36,43 +39,45 @@ exports.createTask = (req, res, next) => {
 
     } catch (error) {
         // Pass unexpected errors to the global error handler
-        next(error);
+        res.status(400).json(error);
     }
-};
+});
 
 
 // ======================
 // GET TASK BY ID
 // ======================
-exports.getTaskById = (req, res, next) => {
-    try {
-        // Search for a task whose ID matches the ID in the URL
-        // Example: GET /api/tasks/123
-        const task = tasks.find(
-            (task) => task.id === req.params.id
-        );
 
-        // If no task is found, return an error
-        if (!task) {
-            return res.status(404).json({
-                message: "Task not found",
-            });
-        }
+router.get("/:id",  (req,res) => {
+    try{
+    // Search for a task whose ID matches the ID in the URL
+    // Example: GET /api/tasks/123
+    const task = tasks.find(
+        (task) => task.id === req.params.id
+    );
 
-        // Return the task data
-        res.status(200).json(task);
-
-    } catch (error) {
-        // Pass errors to the error-handling middleware
-        next(error);
+    // If no task is found, return an error
+    if (!task) {
+        return res.status(404).json({
+            message: "Task not found",
+        });
     }
-};
+
+    // Return the task data
+    res.status(200).json(task);
+
+} catch (error) {
+    // Pass errors to the error-handling middleware
+    res.status(400).json(error);
+}
+});
 
 // ======================
 // UPDATE TASK
 // ======================
-exports.updateTask = (req, res, next) => {
-    try {
+
+router.put("/:id",  (req,res) => {
+    try{
         // Find the task using the ID from the URL
         const task = tasks.find(
             (task) => task.id === req.params.id
@@ -103,15 +108,14 @@ exports.updateTask = (req, res, next) => {
 
     } catch (error) {
         // Forward errors to the global error handler
-        next(error);
+        res.status(400).json(error);
     }
-};
-
+});
 
 // ======================
 // DELETE TASK
 // ======================
-exports.deleteTask = (req, res, next) => {
+router.delete("/:id",  (req, res) => {
     try {
         // Find the index of the task in the array
         const index = tasks.findIndex(
@@ -134,6 +138,6 @@ exports.deleteTask = (req, res, next) => {
 
     } catch (error) {
         // Pass any unexpected errors to the error handler
-        next(error);
+        res.status(400).json(error);
     }
-};
+});
