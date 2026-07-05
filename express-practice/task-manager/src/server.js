@@ -1,6 +1,8 @@
 // Import the Express framework
 const express = require("express");
 
+const cors = require("cors");
+
 // Import all task-related routes from the routes folder
 const taskRoutes = require("./routes/taskRoutes");
 
@@ -13,6 +15,10 @@ const app = express();
 // Middleware to parse incoming JSON request bodies
 // Allows access to JSON data through req.body
 app.use(express.json());
+
+app.use(cors({
+    origin: process.env.FRONTEND_URL
+}));
 
 // Mount task routes under the "/api/tasks" path
 // Example:
