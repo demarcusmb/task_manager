@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 // Import the Express framework
 const express = require("express");
 
@@ -16,8 +18,10 @@ const app = express();
 // Allows access to JSON data through req.body
 app.use(express.json());
 
+// allow frontend in development
 app.use(cors({
-    origin: process.env.FRONTEND_URL
+    // have to use or statement because .env is not access by docker
+    origin: process.env.FRONTEND_URL || "http://localhost:5173"
 }));
 
 // Mount task routes under the "/api/tasks" path
