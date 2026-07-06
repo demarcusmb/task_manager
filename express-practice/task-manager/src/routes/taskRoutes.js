@@ -1,26 +1,25 @@
 const router = require("express").Router();
 
-const tasks = require("../data/tasks");
+const Task = require("../models/Tasks")
 const validateTask = require("../middleware/validateTask");
 
-router.get("/", (req,res)=> {
+router.get("/", async(req,res)=> {
     try{
+        const tasks = await Task.find();
         // Return the array of tasks
         res.status(200).json(tasks);
     } catch(error) {
-        res.status(400).json(error);
+        res.status(500).json(error);
     }
 });
 
 // ======================
 // GET TASK BY ID (Fixed path from "/" to "/:id")
 // ======================
-router.get("/:id",  (req, res) => {
+router.get("/:id",  async (req, res) => {
     try {
         // Search for a task whose ID matches the ID in the URL
-        const task = tasks.find(
-            (task) => task.id === req.params.id
-        );
+        const task = await Task.findById(req.params.id);
 
         if (!task) {
             return res.status(404).json({
@@ -38,19 +37,16 @@ router.get("/:id",  (req, res) => {
 // ======================
 // DELETE TASK
 // ======================
-router.delete("/:id",  (req, res) => {
+router.delete("/:id", async  (req, res) => {
     try {
-        const index = tasks.findIndex(
-            (task) => task.id === req.params.id
-        );
+        const task = await Task.findByIdAndDelete(req.params.id);
 
-        if (index === -1) {
+        if(!task){
             return res.status(404).json({
-                message: "Task not found",
+                message: "Task not found"
             });
         }
 
-        tasks.splice(index, 1);
         res.status(204).send();
 
     } catch (error) {
@@ -58,19 +54,15 @@ router.delete("/:id",  (req, res) => {
     }
 });
 
-router.post("/", validateTask, (req, res) => {
+router.post("/", validateTask, async (req, res) => {
     try {
         const { title } = req.body;
 
-        const newTask = {
-            id: Date.now().toString(),
+        const newTask = await Task.create({
             title
-        };
+        });
 
-        // 1. Add the new task to your data array
-        tasks.push(newTask);
-
-        // 2. CRITICAL: Send the response back to ATAC!
+        // CRITICAL: Send the response back to ATAC!
         return res.status(201).json(newTask);
 
     } catch (error) {
@@ -82,16 +74,22 @@ router.post("/", validateTask, (req, res) => {
 // ======================
 // UPDATE TASK
 // ======================
-router.put("/:id", validateTask,  (req, res) => {
+router.put("/:id", validateTask, async (req, res) => {
     try {
-        const task = tasks.find((task) => task.id === req.params.id);
+
+        const { title } = req.body;
+        const task = await Task.findByIdAndUpdate(
+            req.params.id,
+            { title },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
 
         if (!task) {
             return res.status(404).json({ message: "Task not found" });
         }
-
-        const { title } = req.body;
-        task.title = title;
 
         res.status(200).json(task);
     } catch (error) {

@@ -11,6 +11,9 @@ const taskRoutes = require("./routes/taskRoutes");
 // Import custom error-handling middleware
 const errorHandler = require("./middleware/errorHandler");
 
+const connectDB = require("./config/db");
+
+
 // Create an Express application instance
 const app = express();
 
@@ -21,7 +24,7 @@ app.use(express.json());
 // allow frontend in development
 app.use(cors({
     // have to use or statement because .env is not access by docker
-    origin: process.env.FRONTEND_URL || "http://localhost:5173"
+    origin: process.env.FRONTEND_URL
 }));
 
 // Mount task routes under the "/api/tasks" path
@@ -37,7 +40,17 @@ app.use(errorHandler);
 const PORT = 3000;
 
 // Start the server and listen for incoming requests
-app.listen(PORT, () => {
-    // Log a message to the console when the server starts
-    console.log(`Server running on port ${PORT}`);
-});
+const startServer = async () => {
+    try{
+        await connectDB();
+        app.listen(PORT, () => {
+            // Log a message to the console when the server starts
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch(error){
+        console.error("Failed to start server:", error);
+        process.exit(1);
+    }
+};
+
+startServer();
