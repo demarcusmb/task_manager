@@ -3,9 +3,9 @@ const router = require("express").Router();
 const Task = require("../models/Tasks")
 const validateTask = require("../middleware/validateTask");
 
-router.get("/", async(req,res)=> {
+router.get("/user/userId", async(req,res)=> {
     try{
-        const tasks = await Task.find();
+        const tasks = await Task.find({user: req.params.id});
         // Return the array of tasks
         res.status(200).json(tasks);
     } catch(error) {
@@ -68,7 +68,10 @@ router.post("/", validateTask, async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
+
+
 });
+
 
 
 // ======================
