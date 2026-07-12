@@ -1,127 +1,133 @@
-const express = require("express");
-const router = express.Router();
-
 const Task = require("../models/Tasks");
 
 // ======================
-// CREATE A NEW TASK
+// CREATE TASK
 // ======================
-router.post("/", async (req,res) => {
+exports.createTask = async (req, res) => {
     try {
-        // Extract the title from the request body
-        // Example: { "title": "Learn Express" }
         const { title } = req.body;
 
-        // Validate that a title was provided
         if (!title) {
             return res.status(400).json({
                 message: "Title is required"
             });
         }
 
-        // Create a new task object
-        const newTask = await Task.create ({
-            // Store the provided title
-            title
+        const newTask = await Task.create({
+            title,
+            user: req.user.id
         });
 
-        // Return the newly created task with HTTP status 201 (Created)
         res.status(201).json(newTask);
 
     } catch (error) {
-        // Pass unexpected errors to the global error handler
-        res.status(400).json(error);
+        res.status(500).json({
+            message: error.message
+        });
     }
-});
-
+};
 
 // ======================
 // GET TASK BY ID
 // ======================
+exports.getTask = async (req, res) => {
+    try {
 
-router.get("/:id", async (req,res) => {
-    try{
-    // Search for a task whose ID matches the ID in the URL
-    // Example: GET /api/tasks/123
-    const task = await Task.findById(req.params.id);
+        const task = await Task.findById(req.params.id).populate("user");
 
-    // If no task is found, return an error
-    if (!task) {
-        return res.status(404).json({
-            message: "Task123 not found",
+        if (!task) {
+            return res.status(404).json({
+                message: "Task not found"
+            });
+        }
+
+        res.status(200).json(task);
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
         });
     }
+};
 
-    // Return the task data
-    res.status(200).json(task);
+// ======================
+// GET ALL TASKS FOR A USER
+// ======================
+exports.getUserTasks = async (req, res) => {
+    try {
 
-} catch (error) {
-    // Pass errors to the error-handling middleware
-    res.status(400).json(error);
-}
-});
+        const tasks = await Task.find({
+            user: req.user.id
+        });
+
+        res.status(200).json(tasks);
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
 
 // ======================
 // UPDATE TASK
 // ======================
+exports.updateTask = async (req, res) => {
+    try {
 
-router.put("/:id", async (req,res) => {
-    try{
-        // Get the updated title from the request body
-        const { title } = req.body;
+        const task = await Task.findById(req.params.id);
 
-        // Ensure a title was provided
-        if (!title) {
-            return res.status(400).json({
-                message: "Title is required",
-            });
-        }
-
-        // Update the task title
-        const task = await Task.findByIdAndUpdate(
-           req.params.id,
-            { title },
-            {
-                new: true, // Return updated document
-                runValidators: true // applies schema validation
-            }
-        );
-
-        //Checks if task exist if not returns not found
         if (!task) {
             return res.status(404).json({
-                message: "Task not found",
+                message: "Task not found"
             });
         }
 
-        // Return the updated task
+        if(task.user.toString() !== req.user.id){
+            return res.status(403).json({
+                message: "Not authorized"
+            });
+        }
+
+        task.title = req.body.title || task.title;
+
+        await task.save();
+
         res.status(200).json(task);
 
     } catch (error) {
-        // Forward errors to the global error handler
-        res.status(500).json(error);
+        res.status(500).json({
+            message: error.message
+        });
     }
-});
+};
 
 // ======================
 // DELETE TASK
 // ======================
-router.delete("/:id", async (req, res) => {
+exports.deleteTask = async (req, res) => {
     try {
-        // Find the index of the task in the array
-        const task = await Task.findByIdAndDelete(req.params.id);
-
-        if(!task) {
+        const task = await Task.findById(req.params.id);
+        if (!task) {
             return res.status(404).json({
-                message:"Task not found"
+                message: "Task not found"
             });
         }
 
-        // Return 204 (No Content) to indicate successful deletion
+        if(task.user.toString() !== req.user.id)
+        {
+            return res.status(403).json({
+                message: "Not authorized"
+            });
+        }
+
+        task = await Task.findByIdAndDelete(req.params.id);
+
         res.status(204).send();
 
     } catch (error) {
-        // Pass any unexpected errors to the error handler
-        res.status(500).json(error);
+        res.status(500).json({
+            message: error.message
+        });
     }
-});
+};
