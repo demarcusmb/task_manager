@@ -1,9 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = (req,res,next) => {
-    console.log("AUTH MIDDLEWARE HIT");
     const authHeader = req.headers.authorization;
-   // console.log("AUTH HEADER:", req.headers.authorization);
     if(!authHeader){
         return res.status(401).json({
             message:"Authorization header missing"
@@ -17,8 +15,6 @@ module.exports = (req,res,next) => {
             token,
             process.env.JWT_SECRET
         );
-
-        console.log("DECODED TOKEN:", decoded);
 
         req.user = decoded;
 
