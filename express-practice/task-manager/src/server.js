@@ -7,6 +7,7 @@ const cors = require("cors");
 
 // Import all task-related routes from the routes folder
 const taskRoutes = require("./routes/taskRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 // Import custom error-handling middleware
 const errorHandler = require("./middleware/errorHandler");
@@ -32,6 +33,8 @@ app.use(cors({
 // GET /api/tasks
 // POST /api/tasks
 app.use("/api/tasks", taskRoutes);
+
+app.use("/api/", userRoutes);
 
 // Register the global error-handling middleware
 app.use(errorHandler);

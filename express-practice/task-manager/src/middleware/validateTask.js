@@ -22,6 +22,13 @@ const validateTask = (
         });
     }
 
+
+    if (!req.user){
+        return res.status(400).json({
+            message: "User is required",
+        });
+    }
+
     // If validation passes, continue to the next middleware
     // or route handler
     next();
