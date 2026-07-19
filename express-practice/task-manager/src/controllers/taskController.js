@@ -5,16 +5,17 @@ const Task = require("../models/Tasks");
 // ======================
 exports.createTask = async (req, res) => {
     try {
-        const { title } = req.body;
+        const { title, description } = req.body;
 
-        if (!title) {
+        if (!title || !description) {
             return res.status(400).json({
-                message: "Title is required"
+                message: "Title is required and description are required"
             });
         }
 
         const newTask = await Task.create({
             title,
+            description,
             user: req.user.id
         });
 
@@ -90,6 +91,7 @@ exports.updateTask = async (req, res) => {
         }
 
         task.title = req.body.title || task.title;
+        task.description = req.body.description || task.description;
 
         await task.save();
 
