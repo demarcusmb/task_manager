@@ -24,8 +24,8 @@ app.use(express.json());
 
 // allow frontend in development
 app.use(cors({
-    // have to use or statement because .env is not access by docker
-    origin: process.env.FRONTEND_URL
+    // prod and dev links
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
 }));
 
 // Mount task routes under the "/api/tasks" path
