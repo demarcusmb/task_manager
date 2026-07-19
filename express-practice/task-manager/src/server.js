@@ -25,7 +25,7 @@ app.use(express.json());
 // allow frontend in development
 app.use(cors({
     // prod and dev links
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173/",
 }));
 
 // Mount task routes under the "/api/tasks" path
